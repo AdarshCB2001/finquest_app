@@ -1,0 +1,38 @@
+name: finquest
+description: FinQuest - Gamified Personal Finance Tracker
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Local storage (offline database)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Charts for reports
+  fl_chart: ^0.68.0
+
+  # Icons
+  cupertino_icons: ^1.0.6
+
+  # Unique IDs
+  uuid: ^4.3.3
+
+  # Export files
+  path_provider: ^2.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
