@@ -12,6 +12,7 @@ import 'city_screen.dart';
 import 'achievements_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
+import 'stages_screen.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
@@ -35,16 +36,27 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(appProvider);
-    final level = getLevel(state.xp);
-    final pct = level.maxXp < 999999
-        ? ((state.xp - level.minXp) / (level.maxXp - level.minXp)).clamp(0.0, 1.0)
-        : 1.0;
+    final notifier = ref.read(appProvider.notifier);
+    // Watch state so header rebuilds when net worth changes
+    ref.watch(appProvider);
+    final netWorth = notifier.netWorth;
+    final stage = getStage(netWorth);
+    final isMax = stage.index == kStages.length - 1;
+
+    // Progress toward next stage threshold
+    double stagePct;
+    if (isMax) {
+      stagePct = 1.0;
+    } else {
+      final next = kStages[stage.index + 1];
+      final range = next.minNetWorth - stage.minNetWorth;
+      stagePct = ((netWorth - stage.minNetWorth) / range).clamp(0.0, 1.0);
+    }
 
     return Scaffold(
       body: Column(
         children: [
-          // ── XP HEADER ──
+          // ── STAGE HEADER ──
           Container(
             color: AppTheme.surface,
             padding: EdgeInsets.only(
@@ -60,37 +72,42 @@ class _MainShellState extends ConsumerState<MainShell> {
                     const SizedBox(width: 8),
                     const Text('FinQuest', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.text1)),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accent.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppTheme.accent.withOpacity(0.4)),
+                    // Tappable stage chip → opens StagesScreen
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const StagesScreen()),
                       ),
-                      child: Row(
-                        children: [
-                          const Text('⚡', style: TextStyle(fontSize: 13)),
-                          const SizedBox(width: 4),
-                          Text('${state.xp} XP', style: const TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700, fontSize: 13)),
-                        ],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accent.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppTheme.accent.withOpacity(0.4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(stage.emoji, style: const TextStyle(fontSize: 14)),
+                            const SizedBox(width: 5),
+                            Text(
+                              stage.name,
+                              style: const TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700, fontSize: 12),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.chevron_right_rounded, color: AppTheme.accent, size: 14),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text('${level.name}', style: const TextStyle(color: AppTheme.text1, fontWeight: FontWeight.w600, fontSize: 12)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
+                // Stage progress bar (net worth toward next stage)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: pct,
+                    value: stagePct,
                     backgroundColor: AppTheme.border,
                     valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accent),
                     minHeight: 4,

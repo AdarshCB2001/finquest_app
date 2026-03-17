@@ -23,28 +23,40 @@ const Map<String, AppCategory> kCategories = {
   'other':         AppCategory(key:'other',         icon:'📦', color:Color(0xFF546E7A), bg:Color(0xFFECEFF1)),
 };
 
-// ── XP LEVELS ────────────────────────────────────────────────
-class XpLevel {
+// ── FINANCIAL STAGES (net-worth based, supports demotion) ────
+class FinStage {
+  final int index;
+  final String emoji;
   final String name;
-  final int minXp;
-  final int maxXp;
-  const XpLevel({required this.name, required this.minXp, required this.maxXp});
+  final double minNetWorth; // inclusive lower bound in ₹
+  const FinStage({
+    required this.index,
+    required this.emoji,
+    required this.name,
+    required this.minNetWorth,
+  });
 }
 
-const List<XpLevel> kLevels = [
-  XpLevel(name: 'Shishya',   minXp: 0,     maxXp: 500),
-  XpLevel(name: 'Vyapari',   minXp: 500,   maxXp: 1200),
-  XpLevel(name: 'Sanchayak', minXp: 1200,  maxXp: 2500),
-  XpLevel(name: 'Arthik',    minXp: 2500,  maxXp: 5000),
-  XpLevel(name: 'Dhanvaan',  minXp: 5000,  maxXp: 10000),
-  XpLevel(name: 'Kuber',     minXp: 10000, maxXp: 999999),
+const List<FinStage> kStages = [
+  FinStage(index: 0, emoji: '🐷', name: 'Piggy Bank Saver', minNetWorth: 0),
+  FinStage(index: 1, emoji: '🛖', name: 'Village Newcomer',  minNetWorth: 5001),
+  FinStage(index: 2, emoji: '🏘️', name: 'Town Dweller',      minNetWorth: 25001),
+  FinStage(index: 3, emoji: '🏙️', name: 'City Builder',      minNetWorth: 100001),
+  FinStage(index: 4, emoji: '🏦', name: 'Urban Investor',    minNetWorth: 500001),
+  FinStage(index: 5, emoji: '🏢', name: 'Metro Mogul',       minNetWorth: 2500001),
+  FinStage(index: 6, emoji: '🌆', name: 'Corporate Titan',   minNetWorth: 10000001),
+  FinStage(index: 7, emoji: '🌇', name: 'Tycoon',            minNetWorth: 100000001),
+  FinStage(index: 8, emoji: '🌃', name: 'Business Empire',   minNetWorth: 1000000001),
+  FinStage(index: 9, emoji: '💎', name: 'Billionaire',       minNetWorth: 10000000001),
 ];
 
-XpLevel getLevel(int xp) {
-  for (int i = kLevels.length - 1; i >= 0; i--) {
-    if (xp >= kLevels[i].minXp) return kLevels[i];
+/// Returns the current stage for a given net worth.
+/// Stage can be demoted if net worth drops below the current stage threshold.
+FinStage getStage(double netWorth) {
+  for (int i = kStages.length - 1; i >= 0; i--) {
+    if (netWorth >= kStages[i].minNetWorth) return kStages[i];
   }
-  return kLevels[0];
+  return kStages[0];
 }
 
 // ── ACCOUNT TYPES ─────────────────────────────────────────────

@@ -1,4 +1,4 @@
-// Achievements screen — XP levels, quests, badges
+// Achievements screen — stages, quests, badges
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,16 +11,21 @@ class AchievementsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state  = ref.watch(appProvider);
-    final level  = getLevel(state.xp);
-    final pct    = level.maxXp < 999999
-        ? ((state.xp - level.minXp) / (level.maxXp - level.minXp)).clamp(0.0, 1.0)
-        : 1.0;
+    final state    = ref.watch(appProvider);
+    final notifier = ref.read(appProvider.notifier);
+    final netWorth = notifier.netWorth;
+    final stage    = getStage(netWorth);
+    final isMax    = stage.index == kStages.length - 1;
+    final double stagePct = isMax
+        ? 1.0
+        : ((netWorth - stage.minNetWorth) /
+               (kStages[stage.index + 1].minNetWorth - stage.minNetWorth))
+            .clamp(0.0, 1.0);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // ── LEVEL CARD ──
+        // ── STAGE CARD ──
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -30,25 +35,41 @@ class AchievementsScreen extends ConsumerWidget {
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              const Text('⚡', style: TextStyle(fontSize: 28)),
+              Text(stage.emoji, style: const TextStyle(fontSize: 28)),
               const SizedBox(width: 12),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Level ${kLevels.indexOf(level) + 1} — ${level.name}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20)),
-                Text('${state.xp.toLocaleString()} XP', style: const TextStyle(color: Colors.white70, fontSize: 13)),
-              ]),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Stage ${stage.index + 1} of ${kStages.length}',
+                    style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                  Text(stage.name,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20)),
+                ]),
+              ),
+              if (isMax)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFD700)),
+                  ),
+                  child: const Text('👑 MAX', style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.w800, fontSize: 11)),
+                ),
             ]),
             const SizedBox(height: 14),
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: LinearProgressIndicator(
-                value: pct, backgroundColor: Colors.white24,
+                value: stagePct, backgroundColor: Colors.white24,
                 valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accent),
                 minHeight: 8,
               ),
             ),
             const SizedBox(height: 6),
-            Text(level.maxXp < 999999 ? '${state.xp} / ${level.maxXp} XP to next level' : '🏆 Max level reached!',
+            Text(
+              isMax
+                ? '🏆 You have reached the highest stage!'
+                : '${fmtRupee(kStages[stage.index + 1].minNetWorth - netWorth)} more to ${kStages[stage.index + 1].name}',
               style: const TextStyle(color: Colors.white60, fontSize: 11)),
           ]),
         ),
@@ -190,4 +211,4 @@ class AchievementsScreen extends ConsumerWidget {
   }
 }
 
-extension _IntExt on int { String toLocaleString() => toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (f) => '${f[1]},'); }
+

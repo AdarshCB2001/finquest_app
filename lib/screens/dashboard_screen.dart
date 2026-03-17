@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../constants.dart';
 import '../widgets/transaction_tile.dart';
 import 'transactions_screen.dart';
+import 'streak_heatmap_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -68,45 +69,58 @@ class DashboardScreen extends ConsumerWidget {
         const SizedBox(height: 16),
 
         // ── STREAK ──
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  const Text('🔥', style: TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  const Text('Daily Streak', style: TextStyle(color: AppTheme.text1, fontWeight: FontWeight.w700, fontSize: 15)),
-                  const Spacer(),
-                  Text('${state.streak} days', style: const TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700)),
-                ]),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: List.generate(7, (i) {
-                    final day = monday.add(Duration(days: i));
-                    final dayStr = day.toIso8601String().substring(0, 10);
-                    final isDone = state.streakDays.contains(dayStr);
-                    final isToday = dayStr == todayStr();
-                    return Column(children: [
-                      Container(
-                        width: 34, height: 34,
-                        decoration: BoxDecoration(
-                          color: isDone ? AppTheme.accent : (isToday ? AppTheme.primary : AppTheme.surface),
-                          borderRadius: BorderRadius.circular(10),
-                          border: isToday && !isDone ? Border.all(color: AppTheme.accent, width: 2) : null,
+        InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const StreakHeatmapScreen()),
+          ),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    const Text('🔥', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    const Text('Daily Streak', style: TextStyle(color: AppTheme.text1, fontWeight: FontWeight.w700, fontSize: 15)),
+                    const Spacer(),
+                    Text('${state.streak} days', style: const TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.chevron_right_rounded, color: AppTheme.text2, size: 18),
+                  ]),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: List.generate(7, (i) {
+                      final day = monday.add(Duration(days: i));
+                      final dayStr = day.toIso8601String().substring(0, 10);
+                      final isDone = state.streakDays.contains(dayStr);
+                      final isToday = dayStr == todayStr();
+                      return Column(children: [
+                        Container(
+                          width: 34, height: 34,
+                          decoration: BoxDecoration(
+                            color: isDone ? AppTheme.accent : (isToday ? AppTheme.primary : AppTheme.surface),
+                            borderRadius: BorderRadius.circular(10),
+                            border: isToday && !isDone ? Border.all(color: AppTheme.accent, width: 2) : null,
+                          ),
+                          child: Center(child: Text(
+                            dayLetters[i],
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13,
+                              color: isDone ? Colors.black : AppTheme.text1),
+                          )),
                         ),
-                        child: Center(child: Text(
-                          dayLetters[i],
-                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13,
-                            color: isDone ? Colors.black : AppTheme.text1),
-                        )),
-                      ),
-                    ]);
-                  }),
-                ),
-              ],
+                      ]);
+                    }),
+                  ),
+                  const SizedBox(height: 8),
+                  const Center(
+                    child: Text('Tap to view full heatmap', style: TextStyle(color: AppTheme.text2, fontSize: 11)),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
