@@ -8,6 +8,7 @@ import '../constants.dart';
 import '../widgets/transaction_tile.dart';
 import 'transactions_screen.dart';
 import 'streak_heatmap_screen.dart';
+import 'networth_report_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -31,39 +32,51 @@ class DashboardScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // ── NET WORTH CARD ──
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1A237E), Color(0xFF283593)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 8))],
+        // ── NET WORTH CARD (tap → My Financial Report) ──
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NetworthReportScreen()),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Net Worth', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-              const SizedBox(height: 6),
-              Text(
-                fmtRupee(notifier.netWorth),
-                style: TextStyle(
-                  color: notifier.netWorth >= 0 ? Colors.white : const Color(0xFFFF8A80),
-                  fontSize: 34, fontWeight: FontWeight.w800,
-                ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1A237E), Color(0xFF283593)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 16),
-              Row(children: [
-                _StatChip(label: 'Income', value: fmtRupee(income), color: const Color(0xFF69F0AE)),
-                const SizedBox(width: 12),
-                _StatChip(label: 'Expenses', value: fmtRupee(expense), color: const Color(0xFFFF8A80)),
-                const SizedBox(width: 12),
-                _StatChip(label: 'Saved', value: '$savRate%', color: AppTheme.accent),
-              ]),
-            ],
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 8))],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  const Text('Net Worth', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                  const Spacer(),
+                  const Text('Tap for report', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right_rounded, color: Colors.white38, size: 16),
+                ]),
+                const SizedBox(height: 6),
+                Text(
+                  fmtRupee(notifier.netWorth),
+                  style: TextStyle(
+                    color: notifier.netWorth >= 0 ? Colors.white : const Color(0xFFFF8A80),
+                    fontSize: 34, fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(children: [
+                  _StatChip(label: 'Income', value: fmtRupee(income), color: const Color(0xFF69F0AE)),
+                  const SizedBox(width: 12),
+                  _StatChip(label: 'Expenses', value: fmtRupee(expense), color: const Color(0xFFFF8A80)),
+                  const SizedBox(width: 12),
+                  _StatChip(label: 'Saved', value: '$savRate%', color: AppTheme.accent),
+                ]),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),
